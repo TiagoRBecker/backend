@@ -222,3 +222,6 @@ route.post("/webhook",WebHook)
 route.post("/order",CreateOrder)
 
 
+route.get("/teste", async (req: Request, res: Response) => {
+  return res.send("funcionando")
+});
