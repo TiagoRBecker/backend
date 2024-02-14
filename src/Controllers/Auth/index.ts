@@ -159,7 +159,8 @@ class Auth {
     const {
       credentials
     } = req.body;
-     console.log(credentials)
+     console.log(req.body)
+     
     const userMaster = await prisma?.userMaster.findUnique({
       where:{
           email:credentials?.email
