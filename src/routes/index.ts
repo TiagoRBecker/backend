@@ -16,8 +16,18 @@ import {
   consultarCep,
   rastrearEncomendas,
 } from 'correios-brasil';
+import EmployeeController from "../Controllers/Employee";
 
 const route = Router();
+
+//Master
+route.post("/user-master", AuthControllers.createAccountUserMaster);
+route.post("/signin/userMaster",AuthControllers.authenticationUserMaster)
+route.get("/employees",EmployeeController.getAllEmployees)
+route.get("/employee/:slug",EmployeeController.getOneEmployee)
+route.post("/create-employee",multerConfig.single("profile"),EmployeeController.createEmployee)
+route.post("/employee-update/:slug",multerConfig.single("profile"),EmployeeController.editEmployee)
+route.delete("/employee-delete",EmployeeController.deletEmployee)
 //Categories
 route.get("/categories", CategoriesController.getAllCategories);
 route.get("/category/:slug", CategoriesController.getOneCategory);

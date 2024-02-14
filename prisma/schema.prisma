@@ -11,16 +11,18 @@ datasource db {
 }
 
 model userMaster {
-  id       Int    @id @default(autoincrement())
-  name     String
-  email    String
-  password String
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  avatar    String?
+  employees employee[]
 }
 
 model user {
   id           Int             @id @default(autoincrement())
   name         String
-  lastName String
+  lastName     String
   password     String
   email        String          @unique
   cep          String
@@ -29,9 +31,23 @@ model user {
   adress       String
   numberAdress String
   complement   String
+  avatar       String?
   dvlClient    dvl[]
   orders       Order[]
   library      library_teste[]
+}
+
+model employee {
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String      @unique
+  password     String
+  profession   String
+  phone        String
+  avatar       String?
+  userMaster   userMaster? @relation(fields: [userMasterId], references: [id])
+  userMasterId Int?
+  magazines magazine[]
 }
 
 model magazine {
@@ -51,6 +67,7 @@ model magazine {
   subCategoryId Int?
   Category      Category?    @relation(fields: [categoryId], references: [id])
   categoryId    Int?
+   employees     employee[]
 }
 
 model article {
@@ -145,5 +162,3 @@ model Library_magazine {
   Libray       Libray?  @relation(fields: [librayId], references: [id])
   librayId     Int?
 }
-
-

@@ -81,26 +81,53 @@ class Magazine {
       categoryId,
       price,
       volume,
+      
      
     } = req.body;
-  
+    let ids
+       const employes = JSON.parse(req.body.employes);
+        
+       
+        for (const id of employes){
+          ids = id.id
+        }
+       
+      
       const {cover_file, pdf_file } = req.files as any
       const pdf = pdf_file[0]?.location
       const cover = cover_file[0]?.location
     try {
-      const createMagazine = await prisma?.magazine.create({
-        data: {
-          author,
-          company,
-          name,
-          description,
-          magazine_pdf:pdf,
-          price:Number(price),
-          volume,
-          cover:[cover],
-          categoryId:Number(categoryId),
-        },
-      });
+      await prisma?.$transaction(async (prisma) => {
+        // Criar a revista no banco de dados
+        const createMagazine = await prisma.magazine.create({
+            data: {
+                author,
+                company,
+                name,
+                description,
+                magazine_pdf: pdf,
+                price: Number(price),
+                volume,
+                cover: [cover],
+                categoryId: Number(categoryId),
+            },
+        });
+
+        // Vincular a revista a cada funcionário
+        for (const employee of employes) {
+        
+            const updateEmploye = await prisma.employee.update({
+                where: { id: employee.id },
+                data: {
+                    magazines: {
+                        connect: { id: createMagazine.id }
+                    }
+                }
+            });
+            console.log(updateEmploye)
+        
+        }
+    });
       return res.status(200).json({ message: "Categoria criada com sucesso!" });
     } catch (error) {
       console.log(error)
@@ -108,6 +135,8 @@ class Magazine {
     } finally {
       return this?.handleDisconnect();
     }
+    
+  
     
   }
   //Atualiza uma categoria especifica

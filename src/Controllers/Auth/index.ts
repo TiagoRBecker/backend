@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import prisma from "../../server/prisma";
 import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 class Auth {
   //Funçao para tratar dos erros no servidor
   private handleError(error: any, res: Response) {
@@ -24,6 +25,7 @@ class Auth {
       city,
       complement,
       numberAdress,
+      avatar
     } = req.body;
     
      const chekingEmail = await prisma?.user.findUnique({
@@ -47,7 +49,47 @@ class Auth {
               city,
               complement,
               numberAdress,
-              district
+              district,
+              avatar
+      
+            },
+          });
+          return res.status(200).json({message:"Conta criada com sucesso!"})
+    } catch (error) {
+        return this?.handleError(error,res)
+    }
+    finally{
+        return this?.handleDisconnect()
+    }
+
+    
+  }
+  async createAccountUserMaster(req: Request, res: Response) {
+    const {
+      name,
+      lastName,
+      password,
+      email,
+      avatar
+    } = req.body;
+      const hash = await bcrypt.hash(password,Number(process.env.SALT))
+     const chekingEmail = await prisma?.user.findUnique({
+        where:{
+            email:email
+        }
+     })
+     if(chekingEmail){
+       throw new Error("E-mail já cadastrado no banco de dados!");
+       
+     }
+    try {
+        const create = await prisma?.userMaster.create({
+            data: {
+             name,
+             email,
+             avatar,
+             password:hash
+              
       
             },
           });
@@ -113,6 +155,47 @@ class Auth {
 
     
   }
+  async authenticationUserMaster(req: Request, res: Response) {
+    const {
+      credentials
+    } = req.body;
+    
+    const userMaster = await prisma?.userMaster.findUnique({
+      where:{
+          email:credentials?.email
+      }
+   })
+   if(!userMaster){
+     
+     return res.status(404).json({message:"E-mail não cadastrado no sistema!"})
+     
+   }
+      const macth = await bcrypt.compare(credentials?.password,userMaster.password)
+      if(macth){
+        const token = jwt.sign({
+          id:userMaster?.id ,
+          name:userMaster?.name ,
+          email:userMaster?.email,
+          
+
+
+      },process.env.SECRET as string ,{ expiresIn:"1d"})
+      
+      return res.status(200).json({
+      id: userMaster.id,
+      name: userMaster.name,
+      email: userMaster.email,
+      accessToken: token,
+      })
+      }else{
+        return res.status(401).json({message:"E-mail ou senha inválidos"})
+      }
+     
+     
+
+    
+  }
+  
 }
 const AuthControllers = new Auth();
 export default AuthControllers;
