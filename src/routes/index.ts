@@ -28,6 +28,11 @@ route.get("/employee/:slug",EmployeeController.getOneEmployee)
 route.post("/create-employee",multerConfig.single("profile"),EmployeeController.createEmployee)
 route.post("/employee-update/:slug",multerConfig.single("profile"),EmployeeController.editEmployee)
 route.delete("/employee-delete",EmployeeController.deletEmployee)
+//Master Magaziine
+route.post("/removeEmplooyeMagazine",MagazineController.deleteEmployeeMagazine)
+
+
+route.get("/article-edit/:slug",ArticleController.getOneArticleEdit)
 //Categories
 route.get("/categories", CategoriesController.getAllCategories);
 route.get("/category/:slug", CategoriesController.getOneCategory);
@@ -47,6 +52,7 @@ route.delete("/delet-article", ArticleController.deleteArticle);
 //Magazine
 route.get("/magazines", MagazineController.getAllMagazine);
 route.get("/magazine/:slug", MagazineController.getOneMagazine);
+route.get("/last-magazines", MagazineController.getLastMagazines);
 route.post(
   "/create-magazine",
   multerConfig.fields([

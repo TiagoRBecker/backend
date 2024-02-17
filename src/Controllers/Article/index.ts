@@ -17,7 +17,7 @@ class Article {
       const getMagazine = await prisma?.article.findMany({
         include: {
           magazine: true,
-          Category:true,
+          Category: true,
         },
       });
 
@@ -29,116 +29,131 @@ class Article {
       return this?.handleDisconnect();
     }
   }
+  async getOneArticleEdit(req: Request, res: Response) {
+    const { slug } = req.params;
+    try {
+      const getArticle = await prisma?.article.findUnique({
+        where: { id: Number(slug) },
+        include: {
+          magazine: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+              cover: true,
+              author: true,
+            },
+          },
+        },
+      });
+      return res.status(200).json(getArticle);
+    } catch (error) {
+      return this?.handleError(error, res);
+    } finally {
+      return this?.handleDisconnect();
+    }
+  }
   //Retorna uma categoria especifica
   async getOneArticle(req: Request, res: Response) {
     const { slug } = req.params;
-     const { status} = req.query
+    const { status } = req.query;
 
     try {
-       if(status === "free"){
+      if (status === "free") {
         const getArticle = await prisma?.article.findUnique({
           where: { id: Number(slug) },
-          include:{
-            magazine:{
-              select:{
-                id:true,
-                name:true,
-                company:true,
-                cover:true,
-                author:true
-              }
-            }
-          }
+          include: {
+            magazine: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                cover: true,
+                author: true,
+              },
+            },
+          },
         });
         return res.status(200).json(getArticle);
-       }
-       if(status === "trend"){
+      }
+      if (status === "trend") {
         const getArticle = await prisma?.article.findUnique({
           where: { id: Number(slug) },
-          select:{
-           id:true,
-           name:true,
-           author:true,
-           company:true,
-           cover:true,
-           price:true,
-           status:true,
-           volume:true,
-           description:true,
-           magazine:{
-            select:{
-
-              id:true,
-              name:true,
-              company:true,
-              cover:true,
-              author:true
-            }
-           }
-          }
-        
+          select: {
+            id: true,
+            name: true,
+            author: true,
+            company: true,
+            cover: true,
+            price: true,
+            status: true,
+            volume: true,
+            description: true,
+            magazine: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                cover: true,
+                author: true,
+              },
+            },
+          },
         });
         return res.status(200).json(getArticle);
-       }
-       if(status === "recommended"){
+      }
+      if (status === "recommended") {
         const getArticle = await prisma?.article.findUnique({
           where: { id: Number(slug) },
-          select:{
-           id:true,
-           name:true,
-           author:true,
-           company:true,
-           cover:true,
-           price:true,
-           status:true,
-           volume:true,
-           description:true,
-           magazine:{
-            select:{
-
-              id:true,
-              name:true,
-              company:true,
-              cover:true,
-              author:true
-            }
-           }
-          }
-        
+          select: {
+            id: true,
+            name: true,
+            author: true,
+            company: true,
+            cover: true,
+            price: true,
+            status: true,
+            volume: true,
+            description: true,
+            magazine: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                cover: true,
+                author: true,
+              },
+            },
+          },
         });
         return res.status(200).json(getArticle);
-       }
-       if(status === "most-read"){
+      }
+      if (status === "most-read") {
         const getArticle = await prisma?.article.findUnique({
           where: { id: Number(slug) },
-          select:{
-           id:true,
-           name:true,
-           author:true,
-           company:true,
-           cover:true,
-           price:true,
-           status:true,
-           volume:true,
-           description:true,
-           magazine:{
-            select:{
-
-              id:true,
-              name:true,
-              company:true,
-              cover:true,
-              author:true
-            }
-           }
-          }
-        
+          select: {
+            id: true,
+            name: true,
+            author: true,
+            company: true,
+            cover: true,
+            price: true,
+            status: true,
+            volume: true,
+            description: true,
+            magazine: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                cover: true,
+                author: true,
+              },
+            },
+          },
         });
         return res.status(200).json(getArticle);
-       }
-      
-
-      
+      }
     } catch (error) {
       return this?.handleError(error, res);
     } finally {
@@ -146,25 +161,22 @@ class Article {
     }
   }
   async getArticleRecommended(req: Request, res: Response) {
-   
-
     try {
       const getArticle = await prisma?.article.findMany({
-       where:{
-        status:"recommended"
-       },
-       select:{
-        id:true,
-        author:true,
-        company:true,
-        name:true,
-        description:true,
-        cover:true,
-        price:true,
-        status:true,
-        volume:true,
-        
-       }
+        where: {
+          status: "recommended",
+        },
+        select: {
+          id: true,
+          author: true,
+          company: true,
+          name: true,
+          description: true,
+          cover: true,
+          price: true,
+          status: true,
+          volume: true,
+        },
       });
 
       return res.status(200).json(getArticle);
@@ -175,26 +187,24 @@ class Article {
     }
   }
   async getArticleFree(req: Request, res: Response) {
-   
-
     try {
       const getArticle = await prisma?.article.findMany({
-       where:{
-        status:"free"
-       },
-       select:{
-        id:true,
-        author:true,
-        company:true,
-        name:true,
-        description:true,
-        cover:true,
-        price:true,
-        status:true,
-        volume:true,
-        articlepdf:true,
-        magazine:true
-       }
+        where: {
+          status: "free",
+        },
+        select: {
+          id: true,
+          author: true,
+          company: true,
+          name: true,
+          description: true,
+          cover: true,
+          price: true,
+          status: true,
+          volume: true,
+          articlepdf: true,
+          magazine: true,
+        },
       });
 
       return res.status(200).json(getArticle);
@@ -205,25 +215,22 @@ class Article {
     }
   }
   async getArticleTrend(req: Request, res: Response) {
-   
-
     try {
       const getArticle = await prisma?.article.findMany({
-       where:{
-        status:"trend"
-       },
-       select:{
-        id:true,
-        author:true,
-        company:true,
-        name:true,
-        description:true,
-        cover:true,
-        price:true,
-        status:true,
-        volume:true,
-        
-       }
+        where: {
+          status: "trend",
+        },
+        select: {
+          id: true,
+          author: true,
+          company: true,
+          name: true,
+          description: true,
+          cover: true,
+          price: true,
+          status: true,
+          volume: true,
+        },
       });
 
       return res.status(200).json(getArticle);
@@ -234,25 +241,22 @@ class Article {
     }
   }
   async getArticleMostRead(req: Request, res: Response) {
-   
-
     try {
       const getArticle = await prisma?.article.findMany({
-       where:{
-        status:"most-read"
-       },
-       select:{
-        id:true,
-        author:true,
-        company:true,
-        name:true,
-        description:true,
-        cover:true,
-        price:true,
-        status:true,
-        volume:true,
-        
-       }
+        where: {
+          status: "most-read",
+        },
+        select: {
+          id: true,
+          author: true,
+          company: true,
+          name: true,
+          description: true,
+          cover: true,
+          price: true,
+          status: true,
+          volume: true,
+        },
       });
 
       return res.status(200).json(getArticle);
@@ -274,12 +278,12 @@ class Article {
       volume,
       categoryId,
       magazineId,
-      status
+      status,
     } = req.body;
 
-    const {cover_file, pdf_file } = req.files as any
-    const pdf = pdf_file[0]?.location
-    const cover = cover_file[0]?.location
+    const { cover_file, pdf_file } = req.files as any;
+    const pdf = pdf_file[0]?.location;
+    const cover = cover_file[0]?.location;
     try {
       const createArticle = await prisma?.article.create({
         data: {
@@ -287,18 +291,18 @@ class Article {
           company,
           name,
           description,
-          articlepdf:pdf,
-          price:Number(price),
+          articlepdf: pdf,
+          price: Number(price),
           volume,
-          cover:cover,
-          magazineId:Number(magazineId),
-          categoryId:Number(categoryId),
-          status:status
+          cover: cover,
+          magazineId: Number(magazineId),
+          categoryId: Number(categoryId),
+          status: status,
         },
       });
       return res.status(200).json({ message: "Categoria criada com sucesso!" });
     } catch (error) {
-       console.log(error)
+      console.log(error);
       return this?.handleError(error, res);
     } finally {
       return this?.handleDisconnect();
@@ -306,7 +310,7 @@ class Article {
   }
   //Atualiza uma categoria especifica
   async updateArticle(req: Request, res: Response) {
-    const { slug} = req.params;
+    const { slug } = req.params;
     const {
       author,
       company,
@@ -316,12 +320,12 @@ class Article {
       volume,
       categoryId,
       magazineId,
-      status
+      status,
     } = req.body;
 
-    const {cover_file, pdf_file } = req.files as any
-    const pdf = pdf_file[0]?.location
-    const cover = cover_file[0]?.location
+    const { cover_file, pdf_file } = req.files as any;
+    const pdf = pdf_file[0]?.location;
+    const cover = cover_file[0]?.location;
     if (!slug) {
       return res
         .status(404)
@@ -337,15 +341,14 @@ class Article {
           company,
           name,
           description,
-          articlepdf:pdf,
-          price:Number(price),
+          articlepdf: pdf,
+          price: Number(price),
           volume,
-          cover:cover,
-          magazineId:Number(magazineId),
-          categoryId:Number(categoryId),
-          status:status
+          cover: cover,
+          magazineId: Number(magazineId),
+          categoryId: Number(categoryId),
+          status: status,
         },
-       
       });
       return res
         .status(200)

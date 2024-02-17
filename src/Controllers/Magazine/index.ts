@@ -29,6 +29,32 @@ class Magazine {
       return this?.handleDisconnect();
     }
   }
+  async getLastMagazines(req: Request, res: Response) {
+    try {
+      const getLastMagazine = await prisma?.magazine.findMany({
+        take:4,
+        orderBy:{
+          createDate:"asc"
+        },
+        select:{
+            id:true,
+            name:true,
+            author:true,
+            company:true,
+            cover:true,
+            volume:true,
+
+        }
+      });
+
+      return res.status(200).json(getLastMagazine);
+    } catch (error) {
+      console.log(error);
+      return this?.handleError(error, res);
+    } finally {
+      return this?.handleDisconnect();
+    }
+  }
   //Retorna uma categoria especifica
   async getOneMagazine(req: Request, res: Response) {
     const { slug } = req.params;
@@ -46,6 +72,12 @@ class Magazine {
           volume:true,
           id:true,
           description:true,
+          employees:{
+            select:{
+              id:true,
+               name:true
+            }
+          },
           article:{
             select:{
               author:true,
@@ -60,6 +92,7 @@ class Magazine {
             }
           }
         },
+       
         
       });
 
@@ -81,16 +114,15 @@ class Magazine {
       categoryId,
       price,
       volume,
+
       
      
     } = req.body;
-    let ids
+  
        const employes = JSON.parse(req.body.employes);
         
        
-        for (const id of employes){
-          ids = id.id
-        }
+        
        
       
       const {cover_file, pdf_file } = req.files as any
@@ -124,7 +156,7 @@ class Magazine {
                     }
                 }
             });
-            console.log(updateEmploye)
+           
         
         }
     });
@@ -151,9 +183,10 @@ class Magazine {
       categoryId,
       price,
       volume,
+    
      
     } = req.body;
-    console.log(slug)
+      const employes = JSON.parse(req.body.employes);
       const {cover_file, pdf_file } = req.files as any
       const pdf = pdf_file[0]?.location
       const cover = cover_file[0]?.location
@@ -161,28 +194,49 @@ class Magazine {
     if (!slug) {
       return res
         .status(404)
-        .json({ message: "Não foi possivel atualizar o imóvel!" });
+        .json({ message: "Náo foi possivel localizar a revista!" });
     }
     try {
-      const updateMagazine = await prisma?.magazine.update({
-        where: {
-          id: Number(slug),
-        },
-        data: {
-          author,
-          company,
-          name,
-          description,
-          magazine_pdf:pdf,
-          price:Number(price),
-          volume,
-          cover:[cover],
-          categoryId:Number(categoryId),
-        },
-      });
-      return res
-        .status(200)
-        .json({ message: "Categoria atualizada com sucesso!" });
+      await prisma?.$transaction(async (prisma) => {
+        const updateMagazine = await prisma?.magazine.update({
+          where: {
+            id: Number(slug),
+          },
+          data: {
+            author,
+            company,
+            name,
+            description,
+            magazine_pdf:pdf,
+            price:Number(price),
+            volume,
+            cover:[cover],
+            categoryId:Number(categoryId),
+           
+            
+          },
+        
+        });
+        for (const employee of employes) {
+        
+          const updateEmploye = await prisma.employee.update({
+              where: { id: employee.id },
+              data: {
+                  magazines: {
+                      connect: { id: updateMagazine.id }
+                  }
+              }
+          });
+         
+      
+      }
+      })
+     
+     
+    
+    return res
+    .status(200)
+    .json({ message: "Categoria atualizada com sucesso!" });
     } catch (error) {
        console.log(error)
       return this.handleError(error, res);
@@ -192,6 +246,38 @@ class Magazine {
     
   }
   //Delete uma categoria especifica
+  async deleteEmployeeMagazine(req: Request, res: Response) {
+    const {slug,id } = req.body;
+    if (!slug) {
+      return res
+        .status(403)
+        .json({ message: "Não foi possível encontrar a categoria!" });
+    }
+    try {
+      const deletEmployeeMagazine = await prisma?.magazine.update({
+        where: {
+          id: Number(slug),
+        },
+        data:{
+          employees:{
+            disconnect:{
+              id:Number(id)
+            }
+          }
+        }
+       
+        
+
+      });
+      return res
+        .status(200)
+        .json({ message: "Colaborador removido  com sucesso!" });
+    } catch (error) {
+      return this?.handleError(error, res);
+    } finally {
+      return this?.handleDisconnect();
+    }
+  }
   async deleteMagazine(req: Request, res: Response) {
     const { id } = req.body;
     if (!id) {

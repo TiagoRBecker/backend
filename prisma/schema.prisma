@@ -128,11 +128,12 @@ model dvl {
 model Order {
   id         Int      @id @default(autoincrement())
   items      Json[]
-  status     String
   createDate DateTime @default(now())
   updateAt   DateTime @default(now())
   user       user?    @relation(fields: [userId], references: [id])
   userId     Int?
+  status     Status @default(andamento)
+  codeEnv    String?
 }
 
 model Libray {
@@ -161,4 +162,10 @@ model Library_magazine {
   magazine_pdf String
   Libray       Libray?  @relation(fields: [librayId], references: [id])
   librayId     Int?
+}
+
+enum Status {
+  andamento
+  enviado
+  entregue
 }
