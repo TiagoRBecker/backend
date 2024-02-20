@@ -1,5 +1,6 @@
 import { Response, Request } from "express";
 import prisma from "../../server/prisma";
+import { json } from "body-parser";
 
 class Magazine {
   //Funçao para tratar dos erros no servidor
@@ -14,14 +15,51 @@ class Magazine {
   //Retorna todas as categorias
   async getAllMagazine(req: Request, res: Response) {
     try {
-      const getMagazine = await prisma?.magazine.findMany({
-        include: {
-          article: true,
-          Category: true,
-        },
-      });
+      if (req.query) {
+        const { author, name, company, volume, category, take } = req.query;
+        const takeValue = Number(take);
+        const getMagazineFilter = await prisma?.magazine.findMany({
+          take: takeValue || 10,
+          where: {
+            name: {
+              contains: (name as string) || "",
+              mode: "insensitive",
+            },
+            author: {
+              contains: (author as string) || "",
+              mode: "insensitive",
+            },
+            company: {
+              contains: (company as string) || "",
+              mode: "insensitive",
+            },
+            volume: {
+              contains: (volume as string) || "",
+              mode: "insensitive",
+            },
+            Category: {
+              name: {
+                contains: category as string,
+                mode: "insensitive",
+              },
+            },
+          },
+          include: {
+            article: true,
+            Category: true,
+          },
+        });
+        return res.status(200).json(getMagazineFilter);
+      } else {
+        const getMagazine = await prisma?.magazine.findMany({
+          include: {
+            article: true,
+            Category: true,
+          },
+        });
 
-      return res.status(200).json(getMagazine);
+        return res.status(200).json(getMagazine);
+      }
     } catch (error) {
       console.log(error);
       return this?.handleError(error, res);
@@ -102,8 +140,7 @@ class Magazine {
     }
   }
 
-  //MMaster Class user
-  //Cria uma categoria
+  //Admin Routes
   async getOneMagazineEdit(req: Request, res: Response) {
     const { slug } = req.params;
 
@@ -121,10 +158,8 @@ class Magazine {
           id: true,
           description: true,
           magazine_pdf: true,
-          employees:true,
-        
+          employees: true,
         },
-        
       });
 
       return res.status(200).json(magazine);
@@ -135,7 +170,7 @@ class Magazine {
     }
   }
   async createMagazine(req: Request, res: Response) {
-    const { author, company, name, description, categoryId, price, volume } =
+    const { author, company, name, description, categoryId, price, volume,capa_name } =
       req.body;
 
     const employes = JSON.parse(req.body.employes);
@@ -154,6 +189,7 @@ class Magazine {
             description,
             magazine_pdf: pdf,
             price: Number(price),
+            capa_name,
             volume,
             cover: [cover],
             categoryId: Number(categoryId),
@@ -180,7 +216,7 @@ class Magazine {
       return this?.handleDisconnect();
     }
   }
-  //Atualiza uma categoria especifica
+ 
   async updateMagazine(req: Request, res: Response) {
     const { slug } = req.params;
 
@@ -190,11 +226,11 @@ class Magazine {
         .json({ message: "Náo foi possivel localizar a revista!" });
     }
     try {
-      const { author, company, name, description, categoryId, price, volume } =
+      const { author, company, name, description, categoryId, price, volume ,capa_name,} =
         req.body;
       const employes = JSON.parse(req.body.employes);
       let pdf = "";
-      let cover:any;
+      let cover: any;
       if (req?.files) {
         const { new_cover_file, new_pdf_file } = req.files as any;
         if (new_cover_file) {
@@ -204,9 +240,7 @@ class Magazine {
           pdf = new_pdf_file[0]?.location;
         }
       }
-     
-      
-      
+
       await prisma?.$transaction(async (prisma) => {
         const updateData: any = {
           author,
@@ -215,6 +249,7 @@ class Magazine {
           description,
           price: Number(price),
           volume,
+          capa_name,
           categoryId: Number(categoryId),
         };
         if (req?.files && cover) {
@@ -251,7 +286,7 @@ class Magazine {
       return this?.handleDisconnect();
     }
   }
-  //Delete uma categoria especifica
+ 
   async deleteEmployeeMagazine(req: Request, res: Response) {
     const { slug, id } = req.body;
     if (!slug) {

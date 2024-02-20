@@ -58,6 +58,7 @@ model magazine {
   company       String
   volume        String
   description   String
+  capa_name     String?
   price         Float
   magazine_pdf  String
   createDate    DateTime     @default(now())
@@ -75,6 +76,7 @@ model article {
   name          String
   cover         String
   volume        String
+  capa_name     String?
   author        String
   description   String
   articlepdf    String

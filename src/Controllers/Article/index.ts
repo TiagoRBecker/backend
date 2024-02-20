@@ -13,15 +13,55 @@ class Article {
   }
   //Retorna todas as categorias
   async getAllArticle(req: Request, res: Response) {
+    
     try {
-      const getMagazine = await prisma?.article.findMany({
-        include: {
-          magazine: true,
-          Category: true,
-        },
-      });
+      if(req.query){
+        const { author, name, company, volume, category, take } = req.query;
+        const getArticleFilter = await prisma?.article.findMany({
+          take:Number(take) || 100,
+          where: {
+            name: {
+              contains: (name as string) || "",
+              mode: "insensitive",
+            },
+            author: {
+              contains: (author as string) || "",
+              mode: "insensitive",
+            },
+            company: {
+              contains: (company as string) || "",
+              mode: "insensitive",
+            },
+            volume: {
+              contains: (volume as string) || "",
+              mode: "insensitive",
+            },
+            Category: {
+              name: {
+                contains: category as string,
+                mode: "insensitive",
+              },
+            },
+          },
+          include: {
+            magazine: true,
+            Category: true,
+          },
+        });
+        return res.status(200).json(getArticleFilter);
+      }
+      else{
+        const getAllArticle = await prisma?.article.findMany({
+          include:{
+            magazine: true,
+            Category: true,
+          }
+        })
+        return res.status(200).json(getAllArticle)
+      }
 
-      return res.status(200).json(getMagazine);
+
+      
     } catch (error) {
       console.log(error);
       return this?.handleError(error, res);
@@ -268,7 +308,7 @@ class Article {
     }
   }
 
-  //Cria uma categoria
+  //Admin Routes 
   async createArticle(req: Request, res: Response) {
     const {
       author,
@@ -279,6 +319,7 @@ class Article {
       volume,
       categoryId,
       magazineId,
+      capa_name,
       status,
     } = req.body;
 
@@ -296,6 +337,7 @@ class Article {
           price: Number(price),
           volume,
           cover: cover,
+          capa_name,
           magazineId: Number(magazineId),
           categoryId: Number(categoryId),
           status: status,
@@ -309,7 +351,7 @@ class Article {
       return this?.handleDisconnect();
     }
   }
-  //Atualiza uma categoria especifica
+  
   async updateArticle(req: Request, res: Response) {
     const { slug } = req.params;
     
@@ -328,6 +370,7 @@ class Article {
         volume,
         categoryId,
         magazineId,
+        capa_name,
         status,
       } = req.body;
   
@@ -349,6 +392,7 @@ class Article {
         description,
         price: Number(price),
         volume,
+        capa_name,
         categoryId: Number(categoryId),
         magazineId:Number(magazineId),
         status:status
@@ -376,7 +420,7 @@ class Article {
     }
     
   }
-  //Delete uma categoria especifica
+
   async deleteArticle(req: Request, res: Response) {
     const { id } = req.body;
     if (!id) {
