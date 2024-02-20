@@ -29,16 +29,81 @@ class Article {
     getAllArticle(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const getMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
-                    include: {
-                        magazine: true,
-                        Category: true,
-                    },
-                }));
-                return res.status(200).json(getMagazine);
+                if (req.query) {
+                    const { author, name, company, volume, category, take } = req.query;
+                    const getArticleFilter = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
+                        take: Number(take) || 100,
+                        where: {
+                            name: {
+                                contains: name || "",
+                                mode: "insensitive",
+                            },
+                            author: {
+                                contains: author || "",
+                                mode: "insensitive",
+                            },
+                            company: {
+                                contains: company || "",
+                                mode: "insensitive",
+                            },
+                            volume: {
+                                contains: volume || "",
+                                mode: "insensitive",
+                            },
+                            Category: {
+                                name: {
+                                    contains: category,
+                                    mode: "insensitive",
+                                },
+                            },
+                        },
+                        include: {
+                            magazine: true,
+                            Category: true,
+                        },
+                    }));
+                    return res.status(200).json(getArticleFilter);
+                }
+                else {
+                    const getAllArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
+                        include: {
+                            magazine: true,
+                            Category: true,
+                        }
+                    }));
+                    return res.status(200).json(getAllArticle);
+                }
             }
             catch (error) {
                 console.log(error);
+                return this === null || this === void 0 ? void 0 : this.handleError(error, res);
+            }
+            finally {
+                return this === null || this === void 0 ? void 0 : this.handleDisconnect();
+            }
+        });
+    }
+    getOneArticleEdit(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { slug } = req.params;
+            try {
+                const getArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findUnique({
+                    where: { id: Number(slug) },
+                    include: {
+                        magazine: {
+                            select: {
+                                id: true,
+                                name: true,
+                                company: true,
+                                cover: true,
+                                author: true,
+                            },
+                        },
+                    },
+                }));
+                return res.status(200).json(getArticle);
+            }
+            catch (error) {
                 return this === null || this === void 0 ? void 0 : this.handleError(error, res);
             }
             finally {
@@ -62,10 +127,10 @@ class Article {
                                     name: true,
                                     company: true,
                                     cover: true,
-                                    author: true
-                                }
-                            }
-                        }
+                                    author: true,
+                                },
+                            },
+                        },
                     }));
                     return res.status(200).json(getArticle);
                 }
@@ -88,10 +153,10 @@ class Article {
                                     name: true,
                                     company: true,
                                     cover: true,
-                                    author: true
-                                }
-                            }
-                        }
+                                    author: true,
+                                },
+                            },
+                        },
                     }));
                     return res.status(200).json(getArticle);
                 }
@@ -114,10 +179,10 @@ class Article {
                                     name: true,
                                     company: true,
                                     cover: true,
-                                    author: true
-                                }
-                            }
-                        }
+                                    author: true,
+                                },
+                            },
+                        },
                     }));
                     return res.status(200).json(getArticle);
                 }
@@ -140,13 +205,14 @@ class Article {
                                     name: true,
                                     company: true,
                                     cover: true,
-                                    author: true
-                                }
-                            }
-                        }
+                                    author: true,
+                                },
+                            },
+                        },
                     }));
                     return res.status(200).json(getArticle);
                 }
+                return res.json(404).json([]);
             }
             catch (error) {
                 return this === null || this === void 0 ? void 0 : this.handleError(error, res);
@@ -161,7 +227,7 @@ class Article {
             try {
                 const getArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
                     where: {
-                        status: "recommended"
+                        status: "recommended",
                     },
                     select: {
                         id: true,
@@ -173,7 +239,7 @@ class Article {
                         price: true,
                         status: true,
                         volume: true,
-                    }
+                    },
                 }));
                 return res.status(200).json(getArticle);
             }
@@ -190,7 +256,7 @@ class Article {
             try {
                 const getArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
                     where: {
-                        status: "free"
+                        status: "free",
                     },
                     select: {
                         id: true,
@@ -203,8 +269,8 @@ class Article {
                         status: true,
                         volume: true,
                         articlepdf: true,
-                        magazine: true
-                    }
+                        magazine: true,
+                    },
                 }));
                 return res.status(200).json(getArticle);
             }
@@ -221,7 +287,7 @@ class Article {
             try {
                 const getArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
                     where: {
-                        status: "trend"
+                        status: "trend",
                     },
                     select: {
                         id: true,
@@ -233,7 +299,7 @@ class Article {
                         price: true,
                         status: true,
                         volume: true,
-                    }
+                    },
                 }));
                 return res.status(200).json(getArticle);
             }
@@ -250,7 +316,7 @@ class Article {
             try {
                 const getArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.findMany({
                     where: {
-                        status: "most-read"
+                        status: "most-read",
                     },
                     select: {
                         id: true,
@@ -262,7 +328,7 @@ class Article {
                         price: true,
                         status: true,
                         volume: true,
-                    }
+                    },
                 }));
                 return res.status(200).json(getArticle);
             }
@@ -274,11 +340,11 @@ class Article {
             }
         });
     }
-    //Cria uma categoria
+    //Admin Routes 
     createArticle(req, res) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const { author, company, name, description, price, volume, categoryId, magazineId, status } = req.body;
+            const { author, company, name, description, price, volume, categoryId, magazineId, capa_name, status, } = req.body;
             const { cover_file, pdf_file } = req.files;
             const pdf = (_a = pdf_file[0]) === null || _a === void 0 ? void 0 : _a.location;
             const cover = (_b = cover_file[0]) === null || _b === void 0 ? void 0 : _b.location;
@@ -293,9 +359,10 @@ class Article {
                         price: Number(price),
                         volume,
                         cover: cover,
+                        capa_name,
                         magazineId: Number(magazineId),
                         categoryId: Number(categoryId),
-                        status: status
+                        status: status,
                     },
                 }));
                 return res.status(200).json({ message: "Categoria criada com sucesso!" });
@@ -309,44 +376,58 @@ class Article {
             }
         });
     }
-    //Atualiza uma categoria especifica
     updateArticle(req, res) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const { slug } = req.params;
-            const { author, company, name, description, price, volume, categoryId, magazineId, status } = req.body;
-            const { cover_file, pdf_file } = req.files;
-            const pdf = (_a = pdf_file[0]) === null || _a === void 0 ? void 0 : _a.location;
-            const cover = (_b = cover_file[0]) === null || _b === void 0 ? void 0 : _b.location;
             if (!slug) {
                 return res
                     .status(404)
                     .json({ message: "Não foi possivel atualizar o imóvel!" });
             }
             try {
+                const { author, company, name, description, price, volume, categoryId, magazineId, capa_name, status, } = req.body;
+                let pdf = "";
+                let cover;
+                if (req === null || req === void 0 ? void 0 : req.files) {
+                    const { new_cover_file, new_pdf_file } = req.files;
+                    if (new_cover_file) {
+                        cover = (_a = new_cover_file[0]) === null || _a === void 0 ? void 0 : _a.location;
+                    }
+                    if (new_pdf_file) {
+                        pdf = (_b = new_pdf_file[0]) === null || _b === void 0 ? void 0 : _b.location;
+                    }
+                }
+                const updateData = {
+                    author,
+                    company,
+                    name,
+                    description,
+                    price: Number(price),
+                    volume,
+                    capa_name,
+                    categoryId: Number(categoryId),
+                    magazineId: Number(magazineId),
+                    status: status
+                };
+                if ((req === null || req === void 0 ? void 0 : req.files) && cover) {
+                    updateData.cover = cover;
+                }
+                if ((req === null || req === void 0 ? void 0 : req.files) && pdf) {
+                    updateData.articlepdf = pdf;
+                }
                 const updateArticle = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.article.update({
                     where: {
                         id: Number(slug),
                     },
-                    data: {
-                        author,
-                        company,
-                        name,
-                        description,
-                        articlepdf: pdf,
-                        price: Number(price),
-                        volume,
-                        cover: cover,
-                        magazineId: Number(magazineId),
-                        categoryId: Number(categoryId),
-                        status: status
-                    },
+                    data: updateData
                 }));
                 return res
                     .status(200)
-                    .json({ message: "Categoria atualizada com sucesso!" });
+                    .json({ message: "Artigo atualizada com sucesso!" });
             }
             catch (error) {
+                console.log(error);
                 return this.handleError(error, res);
             }
             finally {
@@ -354,7 +435,6 @@ class Article {
             }
         });
     }
-    //Delete uma categoria especifica
     deleteArticle(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.body;

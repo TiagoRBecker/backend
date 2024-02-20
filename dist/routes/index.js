@@ -18,12 +18,34 @@ const Article_1 = __importDefault(require("../Controllers/Article"));
 const index_1 = __importDefault(require("../Controllers/Magazine/index"));
 const multerConfig_1 = require("../utils/multerConfig");
 const DVL_1 = __importDefault(require("../Controllers/DVL"));
-const MercadoPago_1 = __importDefault(require("../Controllers/MercadoPago"));
-const MercadoPago_2 = require("../Controllers/MercadoPago");
+//*import GatwayPayment from "../Controllers/MercadoPago";
+//import {WebHook,CreateOrder} from "../Controllers/MercadoPago";
 const Auth_1 = __importDefault(require("../Controllers/Auth"));
 const User_1 = __importDefault(require("../Controllers/User"));
 const correios_brasil_1 = require("correios-brasil");
+const Employee_1 = __importDefault(require("../Controllers/Employee"));
 const route = (0, express_1.Router)();
+//Master
+route.post("/user-master", Auth_1.default.createAccountUserMaster);
+route.post("/signin/userMaster", Auth_1.default.authenticationUserMaster);
+route.get("/employees", Employee_1.default.getAllEmployees);
+route.get("/employee/:slug", Employee_1.default.getOneEmployee);
+route.post("/create-employee", multerConfig_1.multerConfig.single("profile"), Employee_1.default.createEmployee);
+route.post("/employee-update/:slug", multerConfig_1.multerConfig.single("profile"), Employee_1.default.editEmployee);
+route.delete("/employee-delete", Employee_1.default.deletEmployee);
+//Master Magaziine
+route.get("/edit-magazine/:slug", index_1.default.getOneMagazineEdit);
+route.post("/removeEmplooyeMagazine", index_1.default.deleteEmployeeMagazine);
+route.post("/update-magazine/:slug", multerConfig_1.multerConfig.fields([
+    { name: "new_cover_file", maxCount: 1 },
+    { name: "new_pdf_file", maxCount: 1 },
+]), index_1.default.updateMagazine);
+//Master Articles
+route.post("/update-article/:slug", multerConfig_1.multerConfig.fields([
+    { name: "new_cover_file", maxCount: 1 },
+    { name: "new_pdf_file", maxCount: 1 },
+]), Article_1.default.updateArticle);
+route.get("/article-edit/:slug", Article_1.default.getOneArticleEdit);
 //Categories
 route.get("/categories", Categories_1.default.getAllCategories);
 route.get("/category/:slug", Categories_1.default.getOneCategory);
@@ -43,6 +65,7 @@ route.delete("/delet-article", Article_1.default.deleteArticle);
 //Magazine
 route.get("/magazines", index_1.default.getAllMagazine);
 route.get("/magazine/:slug", index_1.default.getOneMagazine);
+route.get("/last-magazines", index_1.default.getLastMagazines);
 route.post("/create-magazine", multerConfig_1.multerConfig.fields([
     { name: "cover_file", maxCount: 1 },
     { name: "pdf_file", maxCount: 1 },
@@ -183,10 +206,14 @@ route.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 }));
 route.get("/user-dvl", DVL_1.default.getAllCategories);
 //payment 
-route.post("/payment", MercadoPago_1.default);
-route.post("/webhook", MercadoPago_2.WebHook);
+/*route.post("/payment",GatwayPayment)
+route.post("/webhook",WebHook)
+
 //Payemnts and Orders
-route.post("/order", MercadoPago_2.CreateOrder);
+
+route.post("/order",CreateOrder)
+
+*/
 route.get("/teste", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.send("funcionando");
 }));

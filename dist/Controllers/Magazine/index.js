@@ -29,13 +29,79 @@ class Magazine {
     getAllMagazine(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const getMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.findMany({
-                    include: {
-                        article: true,
-                        Category: true
+                if (req.query) {
+                    const { author, name, company, volume, category, take } = req.query;
+                    const takeValue = Number(take);
+                    const getMagazineFilter = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.findMany({
+                        take: takeValue || 10,
+                        where: {
+                            name: {
+                                contains: name || "",
+                                mode: "insensitive",
+                            },
+                            author: {
+                                contains: author || "",
+                                mode: "insensitive",
+                            },
+                            company: {
+                                contains: company || "",
+                                mode: "insensitive",
+                            },
+                            volume: {
+                                contains: volume || "",
+                                mode: "insensitive",
+                            },
+                            Category: {
+                                name: {
+                                    contains: category,
+                                    mode: "insensitive",
+                                },
+                            },
+                        },
+                        include: {
+                            article: true,
+                            Category: true,
+                        },
+                    }));
+                    return res.status(200).json(getMagazineFilter);
+                }
+                else {
+                    const getMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.findMany({
+                        include: {
+                            article: true,
+                            Category: true,
+                        },
+                    }));
+                    return res.status(200).json(getMagazine);
+                }
+            }
+            catch (error) {
+                console.log(error);
+                return this === null || this === void 0 ? void 0 : this.handleError(error, res);
+            }
+            finally {
+                return this === null || this === void 0 ? void 0 : this.handleDisconnect();
+            }
+        });
+    }
+    getLastMagazines(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const getLastMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.findMany({
+                    take: 4,
+                    orderBy: {
+                        createDate: "asc",
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        author: true,
+                        company: true,
+                        cover: true,
+                        volume: true,
                     },
                 }));
-                return res.status(200).json(getMagazine);
+                return res.status(200).json(getLastMagazine);
             }
             catch (error) {
                 console.log(error);
@@ -63,6 +129,13 @@ class Magazine {
                         volume: true,
                         id: true,
                         description: true,
+                        magazine_pdf: true,
+                        employees: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
                         article: {
                             select: {
                                 author: true,
@@ -73,9 +146,9 @@ class Magazine {
                                 cover: true,
                                 status: true,
                                 volume: true,
-                                id: true
-                            }
-                        }
+                                id: true,
+                            },
+                        },
                     },
                 }));
                 return res.status(200).json(magazine);
@@ -88,28 +161,74 @@ class Magazine {
             }
         });
     }
-    //Cria uma categoria
+    //Admin Routes
+    getOneMagazineEdit(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { slug } = req.params;
+            try {
+                const magazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.findUnique({
+                    where: { id: Number(slug) },
+                    select: {
+                        author: true,
+                        Category: true,
+                        cover: true,
+                        company: true,
+                        name: true,
+                        price: true,
+                        volume: true,
+                        id: true,
+                        description: true,
+                        magazine_pdf: true,
+                        employees: true,
+                    },
+                }));
+                return res.status(200).json(magazine);
+            }
+            catch (error) {
+                return this === null || this === void 0 ? void 0 : this.handleError(error, res);
+            }
+            finally {
+                return this === null || this === void 0 ? void 0 : this.handleDisconnect();
+            }
+        });
+    }
     createMagazine(req, res) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const { author, company, name, description, categoryId, price, volume, } = req.body;
+            const { author, company, name, description, categoryId, price, volume, capa_name } = req.body;
+            const employes = JSON.parse(req.body.employes);
             const { cover_file, pdf_file } = req.files;
             const pdf = (_a = pdf_file[0]) === null || _a === void 0 ? void 0 : _a.location;
             const cover = (_b = cover_file[0]) === null || _b === void 0 ? void 0 : _b.location;
             try {
-                const createMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.create({
-                    data: {
-                        author,
-                        company,
-                        name,
-                        description,
-                        magazine_pdf: pdf,
-                        price: Number(price),
-                        volume,
-                        cover: [cover],
-                        categoryId: Number(categoryId),
-                    },
-                }));
+                yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.$transaction((prisma) => __awaiter(this, void 0, void 0, function* () {
+                    // Criar a revista no banco de dados
+                    const createMagazine = yield prisma.magazine.create({
+                        data: {
+                            author,
+                            company,
+                            name,
+                            description,
+                            magazine_pdf: pdf,
+                            price: Number(price),
+                            capa_name,
+                            volume,
+                            cover: [cover],
+                            categoryId: Number(categoryId),
+                        },
+                    });
+                    // Vincular a revista a cada funcionário
+                    for (const employee of employes) {
+                        const updateEmploye = yield prisma.employee.update({
+                            where: { id: employee.id },
+                            data: {
+                                magazines: {
+                                    connect: { id: createMagazine.id },
+                                },
+                            },
+                        });
+                    }
+                })));
                 return res.status(200).json({ message: "Categoria criada com sucesso!" });
             }
             catch (error) {
@@ -121,41 +240,66 @@ class Magazine {
             }
         });
     }
-    //Atualiza uma categoria especifica
     updateMagazine(req, res) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const { slug } = req.params;
-            const { author, company, name, description, categoryId, price, volume, } = req.body;
-            console.log(slug);
-            const { cover_file, pdf_file } = req.files;
-            const pdf = (_a = pdf_file[0]) === null || _a === void 0 ? void 0 : _a.location;
-            const cover = (_b = cover_file[0]) === null || _b === void 0 ? void 0 : _b.location;
             if (!slug) {
                 return res
                     .status(404)
-                    .json({ message: "Não foi possivel atualizar o imóvel!" });
+                    .json({ message: "Náo foi possivel localizar a revista!" });
             }
             try {
-                const updateMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.update({
-                    where: {
-                        id: Number(slug),
-                    },
-                    data: {
+                const { author, company, name, description, categoryId, price, volume, capa_name, } = req.body;
+                const employes = JSON.parse(req.body.employes);
+                let pdf = "";
+                let cover;
+                if (req === null || req === void 0 ? void 0 : req.files) {
+                    const { new_cover_file, new_pdf_file } = req.files;
+                    if (new_cover_file) {
+                        cover = [(_a = new_cover_file[0]) === null || _a === void 0 ? void 0 : _a.location];
+                    }
+                    if (new_pdf_file) {
+                        pdf = (_b = new_pdf_file[0]) === null || _b === void 0 ? void 0 : _b.location;
+                    }
+                }
+                yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.$transaction((prisma) => __awaiter(this, void 0, void 0, function* () {
+                    const updateData = {
                         author,
                         company,
                         name,
                         description,
-                        magazine_pdf: pdf,
                         price: Number(price),
                         volume,
-                        cover: [cover],
+                        capa_name,
                         categoryId: Number(categoryId),
-                    },
-                }));
-                return res
-                    .status(200)
-                    .json({ message: "Categoria atualizada com sucesso!" });
+                    };
+                    if ((req === null || req === void 0 ? void 0 : req.files) && cover) {
+                        updateData.cover = [cover];
+                    }
+                    if ((req === null || req === void 0 ? void 0 : req.files) && pdf) {
+                        updateData.magazine_pdf = pdf;
+                    }
+                    const updateMagazine = yield (prisma === null || prisma === void 0 ? void 0 : prisma.magazine.update({
+                        where: {
+                            id: Number(slug),
+                        },
+                        data: updateData,
+                    }));
+                    for (const employee of employes) {
+                        const updateEmploye = yield prisma.employee.update({
+                            where: { id: employee.id },
+                            data: {
+                                magazines: {
+                                    connect: { id: updateMagazine.id },
+                                },
+                            },
+                        });
+                    }
+                    return res
+                        .status(200)
+                        .json({ message: "Categoria atualizada com sucesso!" });
+                })));
             }
             catch (error) {
                 console.log(error);
@@ -166,7 +310,39 @@ class Magazine {
             }
         });
     }
-    //Delete uma categoria especifica
+    deleteEmployeeMagazine(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { slug, id } = req.body;
+            if (!slug) {
+                return res
+                    .status(403)
+                    .json({ message: "Não foi possível encontrar a categoria!" });
+            }
+            try {
+                const deletEmployeeMagazine = yield (prisma_1.default === null || prisma_1.default === void 0 ? void 0 : prisma_1.default.magazine.update({
+                    where: {
+                        id: Number(slug),
+                    },
+                    data: {
+                        employees: {
+                            disconnect: {
+                                id: Number(id),
+                            },
+                        },
+                    },
+                }));
+                return res
+                    .status(200)
+                    .json({ message: "Colaborador removido  com sucesso!" });
+            }
+            catch (error) {
+                return this === null || this === void 0 ? void 0 : this.handleError(error, res);
+            }
+            finally {
+                return this === null || this === void 0 ? void 0 : this.handleDisconnect();
+            }
+        });
+    }
     deleteMagazine(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.body;
