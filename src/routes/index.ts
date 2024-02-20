@@ -29,7 +29,21 @@ route.post("/create-employee",multerConfig.single("profile"),EmployeeController.
 route.post("/employee-update/:slug",multerConfig.single("profile"),EmployeeController.editEmployee)
 route.delete("/employee-delete",EmployeeController.deletEmployee)
 //Master Magaziine
+route.get("/edit-magazine/:slug",MagazineController.getOneMagazineEdit)
 route.post("/removeEmplooyeMagazine",MagazineController.deleteEmployeeMagazine)
+route.post(
+  "/update-magazine/:slug",
+  multerConfig.fields([
+    { name: "new_cover_file", maxCount: 1 },
+    { name: "new_pdf_file", maxCount: 1 },
+  ]),
+  MagazineController.updateMagazine
+);
+//Master Articles
+route.post("/update-article/:slug",multerConfig.fields([
+  { name: "new_cover_file", maxCount: 1 },
+  { name: "new_pdf_file", maxCount: 1 },
+]), ArticleController.updateArticle);
 
 
 route.get("/article-edit/:slug",ArticleController.getOneArticleEdit)

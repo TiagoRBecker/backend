@@ -2,12 +2,13 @@ import { Request, Response, response } from "express";
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 const mercadoPago = new MercadoPagoConfig({
   accessToken:
-    "TEST-5209000350365804-012112-78908f97b5f3d4d1b9b3627c2e1676f9-1440745780",
+    "TEST-39555372415078-021907-2422d99568f793ba1e5e5df646ede4b8-829777433",
 });
 const preference = new Preference(mercadoPago);
 const payment = new Payment(mercadoPago);
 const GatwayPayment = async (req: Request, res: Response) => {
   const { cart } = req.body;
+
   const items = cart.map((items: any) => {
     return {
       id: items.id,
@@ -49,6 +50,7 @@ const GatwayPayment = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
   }
+  
 };
 export const WebHook = async (req: Request, res: Response) => {
   const { data } = req.body;
@@ -62,7 +64,7 @@ export const WebHook = async (req: Request, res: Response) => {
       if (satusPayment === "approved") {
         const createOrder = await prisma?.order.create({
           data: {
-            status: satusPayment,
+           
             items: metadata.products,
             userId: metadata.user_id,
           },
@@ -97,7 +99,7 @@ export const CreateOrder = async (req: Request, res: Response) => {
     if (satusPayment === "approved") {
       const createOrder = await prisma?.order.create({
         data: {
-          status: satusPayment,
+          
           items: metadata.products,
           userId: 1,
         },

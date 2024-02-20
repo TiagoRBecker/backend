@@ -154,6 +154,7 @@ class Article {
         });
         return res.status(200).json(getArticle);
       }
+      return res.json(404).json([])
     } catch (error) {
       return this?.handleError(error, res);
     } finally {
@@ -311,53 +312,69 @@ class Article {
   //Atualiza uma categoria especifica
   async updateArticle(req: Request, res: Response) {
     const { slug } = req.params;
-    const {
-      author,
-      company,
-      name,
-      description,
-      price,
-      volume,
-      categoryId,
-      magazineId,
-      status,
-    } = req.body;
-
-    const { cover_file, pdf_file } = req.files as any;
-    const pdf = pdf_file[0]?.location;
-    const cover = cover_file[0]?.location;
+    
     if (!slug) {
       return res
         .status(404)
         .json({ message: "Não foi possivel atualizar o imóvel!" });
     }
     try {
+      const {
+        author,
+        company,
+        name,
+        description,
+        price,
+        volume,
+        categoryId,
+        magazineId,
+        status,
+      } = req.body;
+  
+      let pdf = "";
+      let cover:any;
+      if (req?.files) {
+        const { new_cover_file, new_pdf_file } = req.files as any;
+        if (new_cover_file) {
+          cover = new_cover_file[0]?.location;
+        }
+        if (new_pdf_file) {
+          pdf = new_pdf_file[0]?.location;
+        }
+      }
+      const updateData: any = {
+        author,
+        company,
+        name,
+        description,
+        price: Number(price),
+        volume,
+        categoryId: Number(categoryId),
+        magazineId:Number(magazineId),
+        status:status
+      };
+      if (req?.files && cover) {
+        updateData.cover = cover;
+      }
+      if (req?.files && pdf) {
+        updateData.articlepdf = pdf;
+      }
       const updateArticle = await prisma?.article.update({
         where: {
           id: Number(slug),
         },
-        data: {
-          author,
-          company,
-          name,
-          description,
-          articlepdf: pdf,
-          price: Number(price),
-          volume,
-          cover: cover,
-          magazineId: Number(magazineId),
-          categoryId: Number(categoryId),
-          status: status,
-        },
+        data:updateData
       });
       return res
         .status(200)
-        .json({ message: "Categoria atualizada com sucesso!" });
+        .json({ message: "Artigo atualizada com sucesso!" });
     } catch (error) {
+      console.log(error)
       return this.handleError(error, res);
     } finally {
       return this?.handleDisconnect();
     }
+    
   }
   //Delete uma categoria especifica
   async deleteArticle(req: Request, res: Response) {
