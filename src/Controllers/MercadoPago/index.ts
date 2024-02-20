@@ -1,4 +1,4 @@
-import { Request, Response, response } from "express";
+/*import { Request, Response, response } from "express";
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 const mercadoPago = new MercadoPagoConfig({
   accessToken:
@@ -167,3 +167,4 @@ export const CreateOrder = async (req: Request, res: Response) => {
 };
 
 export default GatwayPayment;
+*/

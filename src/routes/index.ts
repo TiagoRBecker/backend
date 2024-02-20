@@ -7,8 +7,8 @@ import path from "path";
 import { chekingToken } from "../Middleware";
 import { setTempHashCookie } from "../Middleware/authorizeHash";
 import DvlController from "../Controllers/DVL";
-import GatwayPayment from "../Controllers/MercadoPago";
-import {WebHook,CreateOrder} from "../Controllers/MercadoPago";
+//*import GatwayPayment from "../Controllers/MercadoPago";
+//import {WebHook,CreateOrder} from "../Controllers/MercadoPago";
 import AuthControllers from "../Controllers/Auth";
 import UserController from "../Controllers/User";
 import {
@@ -244,14 +244,14 @@ route.get("/users",  async (req, res) => {
 route.get("/user-dvl",DvlController.getAllCategories)
 
 //payment 
-route.post("/payment",GatwayPayment)
+/*route.post("/payment",GatwayPayment)
 route.post("/webhook",WebHook)
 
 //Payemnts and Orders
 
 route.post("/order",CreateOrder)
 
-
+*/
 route.get("/teste", async (req: Request, res: Response) => {
   return res.send("funcionando")
 });
