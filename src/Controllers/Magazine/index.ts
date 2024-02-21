@@ -17,7 +17,6 @@ class Magazine {
     try {
       const { page } = req.query;
       if (page) {
-        
         const take = 8;
         const numberPage = (Number(page) - 1) * take;
         const getMagazine = await prisma?.magazine.findMany({
@@ -130,6 +129,7 @@ class Magazine {
             },
           },
           article: {
+            take: 6,
             select: {
               author: true,
               company: true,

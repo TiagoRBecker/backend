@@ -17,6 +17,7 @@ import {
   rastrearEncomendas,
 } from 'correios-brasil';
 import EmployeeController from "../Controllers/Employee";
+import PagarmeController from "../Controllers/Pagarme";
 
 const route = Router();
 
@@ -94,8 +95,8 @@ route.get("/user/:slug",UserController.getOneUser)
 route.post("/user-perfil",multerConfig.single("perfil"),UserController.updateUser)
 route.post("/user-pass",UserController.changePassUser)
 
-//Uploads
-
+//Payment
+route.post("/order",PagarmeController.createOrder)
 //Cep
 route.post("/cep", async (req,res)=>{
 
@@ -122,6 +123,7 @@ route.post("/cep", async (req,res)=>{
   }
   
 })
+
 
 export default route;
 route.post("/read", async (req: Request, res: Response) => {
