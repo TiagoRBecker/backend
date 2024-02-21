@@ -15,7 +15,29 @@ class Article {
   async getAllArticle(req: Request, res: Response) {
     
     try {
-      if(req.query){
+       const { page} = req.query
+      if(page){
+        
+        const take = 6;
+        const numberPage = (Number(page) - 1) * take;
+        const getArticles = await prisma?.article.findMany({
+          take: take,
+          skip: Number(numberPage),
+
+          include: {
+            magazine: true,
+            Category: true,
+          },
+        });
+        const listCount: any = await prisma?.article.count();
+        const finalPage = Math.ceil(listCount / take);
+
+        return res
+          .status(200)
+          .json({ getArticles, finalPage });
+        
+      }
+      else{
         const { author, name, company, volume, category, take } = req.query;
         const getArticleFilter = await prisma?.article.findMany({
           take:Number(take) || 100,
@@ -49,15 +71,6 @@ class Article {
           },
         });
         return res.status(200).json(getArticleFilter);
-      }
-      else{
-        const getAllArticle = await prisma?.article.findMany({
-          include:{
-            magazine: true,
-            Category: true,
-          }
-        })
-        return res.status(200).json(getAllArticle)
       }
 
 
@@ -337,7 +350,7 @@ class Article {
           price: Number(price),
           volume,
           cover: cover,
-          capa_name,
+          capa_name:capa_name,
           magazineId: Number(magazineId),
           categoryId: Number(categoryId),
           status: status,

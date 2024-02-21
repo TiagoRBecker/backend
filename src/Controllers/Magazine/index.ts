@@ -15,11 +15,32 @@ class Magazine {
   //Retorna todas as categorias
   async getAllMagazine(req: Request, res: Response) {
     try {
-      if (req.query) {
+      const { page } = req.query;
+      if (page) {
+        
+        const take = 8;
+        const numberPage = (Number(page) - 1) * take;
+        const getMagazine = await prisma?.magazine.findMany({
+          take: take,
+          skip: Number(numberPage),
+
+          include: {
+            article: true,
+            Category: true,
+          },
+        });
+        const listCount: any = await prisma?.magazine.count();
+        const finalPage = Math.ceil(listCount / take);
+
+        return res
+          .status(200)
+          .json({ getMagazine, finalPage, message: "Aqui ok" });
+      } else {
         const { author, name, company, volume, category, take } = req.query;
-        const takeValue = Number(take);
+
         const getMagazineFilter = await prisma?.magazine.findMany({
-          take: takeValue || 10,
+          take: Number(take) || 8,
+
           where: {
             name: {
               contains: (name as string) || "",
@@ -49,16 +70,8 @@ class Magazine {
             Category: true,
           },
         });
-        return res.status(200).json(getMagazineFilter);
-      } else {
-        const getMagazine = await prisma?.magazine.findMany({
-          include: {
-            article: true,
-            Category: true,
-          },
-        });
 
-        return res.status(200).json(getMagazine);
+        return res.status(200).json(getMagazineFilter);
       }
     } catch (error) {
       console.log(error);
@@ -170,8 +183,16 @@ class Magazine {
     }
   }
   async createMagazine(req: Request, res: Response) {
-    const { author, company, name, description, categoryId, price, volume,capa_name } =
-      req.body;
+    const {
+      author,
+      company,
+      name,
+      description,
+      categoryId,
+      price,
+      volume,
+      capa_name,
+    } = req.body;
 
     const employes = JSON.parse(req.body.employes);
 
@@ -216,7 +237,7 @@ class Magazine {
       return this?.handleDisconnect();
     }
   }
- 
+
   async updateMagazine(req: Request, res: Response) {
     const { slug } = req.params;
 
@@ -226,8 +247,16 @@ class Magazine {
         .json({ message: "Náo foi possivel localizar a revista!" });
     }
     try {
-      const { author, company, name, description, categoryId, price, volume ,capa_name,} =
-        req.body;
+      const {
+        author,
+        company,
+        name,
+        description,
+        categoryId,
+        price,
+        volume,
+        capa_name,
+      } = req.body;
       const employes = JSON.parse(req.body.employes);
       let pdf = "";
       let cover: any;
@@ -286,7 +315,7 @@ class Magazine {
       return this?.handleDisconnect();
     }
   }
- 
+
   async deleteEmployeeMagazine(req: Request, res: Response) {
     const { slug, id } = req.body;
     if (!slug) {
