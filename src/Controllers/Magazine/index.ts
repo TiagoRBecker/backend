@@ -107,8 +107,47 @@ class Magazine {
   //Retorna uma categoria especifica
   async getOneMagazine(req: Request, res: Response) {
     const { slug } = req.params;
+    const allArticles = req.headers['x-all-articles'];
 
     try {
+      if(allArticles){
+        const magazine = await prisma?.magazine.findUnique({
+          where: { id: Number(slug) },
+          select: {
+            author: true,
+            Category: true,
+            cover: true,
+            company: true,
+            name: true,
+            price: true,
+            volume: true,
+            id: true,
+            description: true,
+            magazine_pdf: true,
+            employees: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            article: {
+              take: 100,
+              select: {
+                author: true,
+                company: true,
+                description: true,
+                name: true,
+                price: true,
+                cover: true,
+                status: true,
+                volume: true,
+                id: true,
+              },
+            },
+          },
+        });
+        return res.status(200).json(magazine);
+      }
       const magazine = await prisma?.magazine.findUnique({
         where: { id: Number(slug) },
         select: {
