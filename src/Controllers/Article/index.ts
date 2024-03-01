@@ -13,11 +13,9 @@ class Article {
   }
   //Retorna todas as categorias
   async getAllArticle(req: Request, res: Response) {
-    
     try {
-       const { page} = req.query
-      if(page){
-        
+      const { page } = req.query;
+      if (page) {
         const take = 6;
         const numberPage = (Number(page) - 1) * take;
         const getArticles = await prisma?.article.findMany({
@@ -32,15 +30,11 @@ class Article {
         const listCount: any = await prisma?.article.count();
         const finalPage = Math.ceil(listCount / take);
 
-        return res
-          .status(200)
-          .json({ getArticles, finalPage });
-        
-      }
-      else{
+        return res.status(200).json({ getArticles, finalPage });
+      } else {
         const { author, name, company, volume, category, take } = req.query;
         const getArticleFilter = await prisma?.article.findMany({
-          take:Number(take) || 100,
+          take: Number(take) || 100,
           where: {
             name: {
               contains: (name as string) || "",
@@ -72,9 +66,6 @@ class Article {
         });
         return res.status(200).json(getArticleFilter);
       }
-
-
-      
     } catch (error) {
       console.log(error);
       return this?.handleError(error, res);
@@ -127,7 +118,21 @@ class Article {
             },
           },
         });
+        if (getArticle) {
+          const updateView = await prisma?.article.update({
+            where: {
+              id: Number(slug),
+            },
+            data: {
+              views: {
+                increment: 1,
+              },
+            },
+          });
+          
+        }
         return res.status(200).json(getArticle);
+       
       }
       if (status === "trend") {
         const getArticle = await prisma?.article.findUnique({
@@ -153,6 +158,19 @@ class Article {
             },
           },
         });
+        if (getArticle) {
+          const updateView = await prisma?.article.update({
+            where: {
+              id: Number(slug),
+            },
+            data: {
+              views: {
+                increment: 1,
+              },
+            },
+          });
+          
+        }
         return res.status(200).json(getArticle);
       }
       if (status === "recommended") {
@@ -179,6 +197,19 @@ class Article {
             },
           },
         });
+        if (getArticle) {
+          const updateView = await prisma?.article.update({
+            where: {
+              id: Number(slug),
+            },
+            data: {
+              views: {
+                increment: 1,
+              },
+            },
+          });
+          
+        }
         return res.status(200).json(getArticle);
       }
       if (status === "most-read") {
@@ -205,9 +236,22 @@ class Article {
             },
           },
         });
+        if (getArticle) {
+          const updateView = await prisma?.article.update({
+            where: {
+              id: Number(slug),
+            },
+            data: {
+              views: {
+                increment: 1,
+              },
+            },
+          });
+          
+        }
         return res.status(200).json(getArticle);
       }
-      return res.json(404).json([])
+      return res.json(404).json([]);
     } catch (error) {
       return this?.handleError(error, res);
     } finally {
@@ -250,6 +294,7 @@ class Article {
           id: true,
           author: true,
           company: true,
+          views:true,
           name: true,
           description: true,
           cover: true,
@@ -321,7 +366,7 @@ class Article {
     }
   }
 
-  //Admin Routes 
+  //Admin Routes
   async createArticle(req: Request, res: Response) {
     const {
       author,
@@ -350,7 +395,7 @@ class Article {
           price: Number(price),
           volume,
           cover: cover,
-          capa_name:capa_name,
+          capa_name: capa_name,
           magazineId: Number(magazineId),
           categoryId: Number(categoryId),
           status: status,
@@ -364,10 +409,10 @@ class Article {
       return this?.handleDisconnect();
     }
   }
-  
+
   async updateArticle(req: Request, res: Response) {
     const { slug } = req.params;
-    
+
     if (!slug) {
       return res
         .status(404)
@@ -386,9 +431,9 @@ class Article {
         capa_name,
         status,
       } = req.body;
-  
+
       let pdf = "";
-      let cover:any;
+      let cover: any;
       if (req?.files) {
         const { new_cover_file, new_pdf_file } = req.files as any;
         if (new_cover_file) {
@@ -407,8 +452,8 @@ class Article {
         volume,
         capa_name,
         categoryId: Number(categoryId),
-        magazineId:Number(magazineId),
-        status:status
+        magazineId: Number(magazineId),
+        status: status,
       };
       if (req?.files && cover) {
         updateData.cover = cover;
@@ -420,18 +465,17 @@ class Article {
         where: {
           id: Number(slug),
         },
-        data:updateData
+        data: updateData,
       });
       return res
         .status(200)
         .json({ message: "Artigo atualizada com sucesso!" });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return this.handleError(error, res);
     } finally {
       return this?.handleDisconnect();
     }
-    
   }
 
   async deleteArticle(req: Request, res: Response) {

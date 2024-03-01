@@ -18,6 +18,9 @@ import {
 } from 'correios-brasil';
 import EmployeeController from "../Controllers/Employee";
 import PagarmeController from "../Controllers/Pagarme";
+import OrdersController from "../Controllers/Orders";
+import EventController from "../Controllers/Events";
+import BannerController from "../Controllers/Banner";
 
 const route = Router();
 
@@ -45,6 +48,17 @@ route.post("/update-article/:slug",multerConfig.fields([
   { name: "new_cover_file", maxCount: 1 },
   { name: "new_pdf_file", maxCount: 1 },
 ]), ArticleController.updateArticle);
+//Master Banners
+route.get("/banners", BannerController.getAllBanners)
+route.post("/create-banners",multerConfig.single("banner"),BannerController.createBanner)
+route.delete("/delet-banners/:slug",BannerController.deletBanner)
+//Master Events
+route.get("/events",EventController.getAllEvents)
+route.get("/covers",EventController.getAllCovers)
+route.post("/create-cover-events",multerConfig.single("cover"),EventController.createCoverEvents)
+route.post("/create-events",EventController.createEvents)
+route.post("/vote-cover-event/:slug",EventController.addVoteCover)
+route.delete("/events/delet/:slug",EventController.deletEvent)
 
 
 route.get("/article-edit/:slug",ArticleController.getOneArticleEdit)
@@ -91,12 +105,18 @@ route.post("/signUp",AuthControllers.createAccount)
 route.post("/signIn",AuthControllers.authentication)
 
 //Users
+
 route.get("/user/:slug",UserController.getOneUser)
 route.post("/user-perfil",multerConfig.single("perfil"),UserController.updateUser)
 route.post("/user-pass",UserController.changePassUser)
+route.get("/library/:slug",UserController.getLibraryUser)
+
+route.get("/library/book/:slug",UserController.getOneBookLibraryUser)
 
 //Payment
 route.post("/order",PagarmeController.createOrder)
+route.post("/webhook",PagarmeController.webHook)
+route.get("/payment-status",PagarmeController.paymentStatus)
 //Cep
 route.post("/cep", async (req,res)=>{
 
@@ -123,7 +143,8 @@ route.post("/cep", async (req,res)=>{
   }
   
 })
-
+//Orders
+route.get("/orders/:slug",OrdersController.getOneOrder)
 
 export default route;
 route.post("/read", async (req: Request, res: Response) => {
@@ -173,9 +194,9 @@ route.post("/users/:slug",  async (req, res) => {
   
    
 });
-route.get("/users/:slug",  async (req, res) => {
+route.get("/user/:slug",  async (req, res) => {
      const { slug} = req.params
-     console.log(slug)
+   
   try {
     const user = await prisma?.user.findUnique({
       where:{
@@ -203,7 +224,20 @@ route.get("/users/:slug",  async (req, res) => {
   
 });
 
+ route.get("/book",async (req, res) =>{
+   const {idUser,idBook} = req.query
+    
+   const getBookIdUser = await prisma?.library_teste.findFirst({
+    where:{
+      id:Number(idBook),
+      userId:Number(idUser),
+     
+    },
 
+   })
+   return res.status(200).json(getBookIdUser)
+   
+ })
 route.get("/dvl/:slug",  async (req, res) => {
   const { slug} = req.params
 try {

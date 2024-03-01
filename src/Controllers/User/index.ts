@@ -83,6 +83,61 @@ class User  {
     async deletUser(){
 
     }
+    async getLibraryUser(req:Request,res:Response){
+        const {name} = req.query
+        const { slug} = req.params
+        console.log("Aqui",slug)
+        try {
+            const request = await prisma?.library_teste.findMany({
+                where:{
+                    userId:Number(slug),
+                    name:{
+                        contains:name as string || "",
+                        mode:"insensitive"
+
+                    },
+                    
+                     
+                },
+                select:{
+                    id:true,
+                    cover:true,
+                    name:true,
+                    Category:true
+                }
+            })
+            return res.status(200).json(request)
+        } catch (error) {
+            return this?.handleError(error,res)
+        }
+        finally{
+            return this?.handleDisconnect()
+        }
+       
+    }
+    async getOneBookLibraryUser(req:Request,res:Response){
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        const { slug} = req.params
+      
+        try {
+            const request = await prisma?.library_teste.findUnique({
+             where:{
+                id:Number(slug)
+             },
+             select:{
+                magazine_pdf:true
+             }
+                
+            })
+            return res.status(200).json(request)
+        } catch (error) {
+            return this?.handleError(error,res)
+        }
+        finally{
+            return this?.handleDisconnect()
+        }
+       
+    }
 }
 
 const UserController = new User()

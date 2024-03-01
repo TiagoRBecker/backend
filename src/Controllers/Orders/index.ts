@@ -34,6 +34,7 @@ class Orders {
       const getOrder = await prisma?.order.findUnique({
         where: { id: Number(slug) },
        
+       
       });
 
       return res.status(200).json(getOrder);
